@@ -43,8 +43,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
         findViewById(R.id.emailSignInButton).setOnClickListener(this);
         findViewById(R.id.emailCreateAccountButton).setOnClickListener(this);
-        findViewById(R.id.signOutButton).setOnClickListener(this);
-        findViewById(R.id.reloadButton).setOnClickListener(this);
 
 
         mAuth = FirebaseAuth.getInstance();
@@ -97,30 +95,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         // [END sign_in_with_email]
     }
 
-    private void signOut() {
-        mAuth.signOut();
-        updateUI(null);
-    }
 
-
-    private void reload() {
-        mAuth.getCurrentUser().reload().addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()) {
-                    updateUI(mAuth.getCurrentUser());
-                    Toast.makeText(MainActivity.this,
-                            "Reload successful!",
-                            Toast.LENGTH_SHORT).show();
-                } else {
-//                    Log.e(TAG, "reload", task.getException());
-                    Toast.makeText(MainActivity.this,
-                            "Failed to reload user.",
-                            Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-    }
 
     private boolean validateForm() {
         boolean valid = true;
@@ -147,21 +122,16 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     private void updateUI(FirebaseUser user) {
         hideProgressBar();
         if (user != null) {
-            mStatusTextView.setText(getString(R.string.emailpassword_status_fmt,
-                    user.getEmail(), user.isEmailVerified()));
-            mDetailTextView.setText(getString(R.string.firebase_status_fmt, user.getUid()));
-
-            findViewById(R.id.emailPasswordButtons).setVisibility(View.GONE);
-            findViewById(R.id.emailPasswordFields).setVisibility(View.GONE);
-            findViewById(R.id.signedInButtons).setVisibility(View.VISIBLE);
+            intent = new Intent(this, SignedInActivity.class);
+            intent.putExtra("email", user.getEmail());
+            startActivity(intent);
 
         } else {
             mStatusTextView.setText(R.string.signed_out);
-            mDetailTextView.setText(null);
+            mDetailTextView.setText("Welcome to Real time maps app");
 
             findViewById(R.id.emailPasswordButtons).setVisibility(View.VISIBLE);
             findViewById(R.id.emailPasswordFields).setVisibility(View.VISIBLE);
-            findViewById(R.id.signedInButtons).setVisibility(View.GONE);
         }
     }
 
@@ -175,10 +145,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             startActivity(intent);
         } else if (i == R.id.emailSignInButton) {
             signIn(mEmailField.getText().toString(), mPasswordField.getText().toString());
-        } else if (i == R.id.signOutButton) {
-            signOut();
-        } else if (i == R.id.reloadButton) {
-            reload();
         }
     }
 }

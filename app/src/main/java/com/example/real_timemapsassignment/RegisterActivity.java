@@ -14,8 +14,11 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class RegisterActivity extends BaseActivity implements View.OnClickListener {
     private Intent intent;
@@ -77,12 +80,39 @@ public class RegisterActivity extends BaseActivity implements View.OnClickListen
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
 //                            Log.d(TAG, "createUserWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
+                            final FirebaseUser user = mAuth.getCurrentUser();
                             String role = isAdmin ? "admin" : "client";
-                            User user1 = new User(user.getEmail(), role);
-                            FirebaseDatabase database = FirebaseDatabase.getInstance();
-                            String key = database.getReference().child("users/").push().getKey();
-                            database.getReference().child("users/").child(key).setValue(user1);
+                            final User user1 = new User(user.getEmail(), role);
+                            final FirebaseDatabase database = FirebaseDatabase.getInstance();
+                            if(database.getReference("users").getKey() == null){
+                                List<User> users = new ArrayList<>();
+                                users.add(user1);
+                                database.getReference("users/").setValue(users);
+                            }else{
+                                database.getReference("users").addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        if(dataSnapshot.exists()) {
+                                            List<User> users = new ArrayList<>();
+                                            for (DataSnapshot dss: dataSnapshot.getChildren()) {
+                                                User user2 = dss.getValue(User.class);
+                                                users.add(user2);
+                                            }
+                                            users.add(user1);
+                                            database.getReference("users/").setValue(users);
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                    }
+                                });
+
+                            }
+
+//                            String key =
+//                            database.getReference().child("users/").child(key).setValue(user1);
                             intent = new Intent(getApplicationContext(), SignedInActivity.class);
                             startActivity(intent);
                         } else {

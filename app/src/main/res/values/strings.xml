@@ -75,6 +75,8 @@
     <string name="emailpassword_status_fmt">Email User: %1$s (verified: %2$b)</string>
     <string name="emailpassword_title_text">Email and Password</string>
     <string name="register">Register</string>
+    <string name="admin">Admin Page</string>
+    <string name="maps">Time by location</string>
 
     <string name="passwordless_status_fmt">Email User: %1$s (verified: %2$b)</string>
     <string name="passwordless_title_text">Passwordless Sign In</string>
@@ -109,4 +111,6 @@
     <string name="multi_factor_signed_out">You are not signed in. To use this sample, first navigate to the
         Email/Password example to sign in and then return here to enroll in multi-factor auth.
     </string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Open navigation close</string>
 </resources>

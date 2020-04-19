@@ -31,11 +31,12 @@
 
         <activity
                 android:name=".MapsFragment"
-                android:label="@string/title_activity_maps">
+                android:label="@string/title_activity_maps"
+                android:theme="@style/Updated">
         </activity>
         <activity
                 android:name=".SignedInActivity"
-                android:theme="@style/AppTheme.NoActionBar">
+                android:theme="@style/Updated">
         </activity>
         <activity android:name=".RegisterActivity">
         </activity>

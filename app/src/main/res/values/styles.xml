@@ -45,7 +45,13 @@
         <item name="android:gravity">center</item>
         <item name="android:textSize">36sp</item>
     </style>
-    <style name="AppTheme.NoActionBar">
+    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat">
+        <item name="windowActionBar">true</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorSurface">@color/colorSurface</item>
+    </style>
+    <style name="Updated" parent="Theme.AppCompat">
+        <item name="colorSurface">@color/colorSurface</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>

@@ -132,7 +132,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
                                                             if (mMap != null) {
                                                                 mMap.addMarker(new MarkerOptions().position(ltlg).title("Marker in " + ltlg.toString())).setSnippet(locationInfo);
                                                                 mMap.moveCamera(CameraUpdateFactory.newLatLng(ltlg));
-                                                                Toast.makeText(getActivity().getApplicationContext(), "saved", Toast.LENGTH_SHORT).show();
                                                             }
                                                         }
                                                     });

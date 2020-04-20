@@ -38,12 +38,6 @@ public class RegisterActivity extends BaseActivity implements View.OnClickListen
         isAdminCheckXox = findViewById(R.id.isadmin);
         findViewById(R.id.createAccountButton).setOnClickListener(this);
         findViewById(R.id.goBack).setOnClickListener(this);
-        findViewById(R.id.goBack).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-            }
-        });
 
         mAuth = FirebaseAuth.getInstance();
     }

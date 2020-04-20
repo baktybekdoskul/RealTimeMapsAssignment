@@ -1,8 +1,13 @@
 package com.example.real_timemapsassignment;
 
 import android.content.DialogInterface;
+import android.os.AsyncTask;
+import android.util.JsonReader;
 import android.view.LayoutInflater;
 import android.view.View;
+
+import java.util.*;
+
 import android.view.ViewGroup;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -22,6 +27,12 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.*;
 
+import javax.net.ssl.HttpsURLConnection;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,6 +108,45 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
                                     }
                                     markers.add(latLng);
                                     database.getReference("markers/").child(curUser.getUid()).setValue(markers);
+                                    AsyncTask.execute(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            try {
+                                                URL geocod = new URL("https://geocode.xyz/" + latLng.getLatitude() + "," + latLng.getLongitude());
+                                                HttpsURLConnection apiConnection = (HttpsURLConnection) geocod.openConnection();
+                                                apiConnection.setRequestProperty("json", "1");
+                                                if (apiConnection.getResponseCode() == 200) {
+                                                    InputStream responseBody = apiConnection.getInputStream();
+                                                    InputStreamReader responseBodyReader = new InputStreamReader(responseBody, "UTF-8");
+                                                    JsonReader jsonReader = new JsonReader(responseBodyReader);
+                                                    jsonReader.beginObject();
+                                                    final String locationInfo = jsonReader.toString();
+                                                    /*while (jsonReader.hasNext()) {
+                                                        locationInfo = jsonReader.nextName() + " : " + jsonReader.nextString() + ";\n";
+                                                    }*/
+                                                    jsonReader.close();
+                                                    apiConnection.disconnect();
+                                                    getActivity().runOnUiThread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            if (mMap != null) {
+                                                                mMap.addMarker(new MarkerOptions().position(ltlg).title("Marker in " + ltlg.toString())).setSnippet(locationInfo);
+                                                                mMap.moveCamera(CameraUpdateFactory.newLatLng(ltlg));
+                                                                Toast.makeText(getActivity().getApplicationContext(), "saved", Toast.LENGTH_SHORT).show();
+                                                            }
+                                                        }
+                                                    });
+
+                                                } else {
+                                                    Toast.makeText(getActivity().getApplicationContext(), "Something went wrong during api call", Toast.LENGTH_SHORT).show();
+                                                }
+                                            } catch (MalformedURLException e) {
+                                                e.printStackTrace();
+                                            } catch (IOException e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    });
                                 }
                             }
 
@@ -105,11 +155,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
                             }
                         });
-                        if (mMap != null) {
-                            mMap.addMarker(new MarkerOptions().position(ltlg).title("Marker in " + ltlg.toString()));
-                            mMap.moveCamera(CameraUpdateFactory.newLatLng(ltlg));
-                            Toast.makeText(getActivity().getApplicationContext(), "saved", Toast.LENGTH_SHORT).show();
-                        }
                     }
                 })
                 .setNegativeButton("No, I won't", new DialogInterface.OnClickListener() {
@@ -127,11 +172,68 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
         if (dataSnapshot.exists()) {
             for (DataSnapshot dss : dataSnapshot.getChildren()) {
-                LatLong latLng = dss.getValue(LatLong.class);
-                LatLng ltlg = new LatLng(latLng.getLatitude(), latLng.getLongitude());
-                if (mMap != null) {
-                    mMap.addMarker(new MarkerOptions().position(ltlg).title("Marker in " + ltlg.toString()));
-                }
+                final LatLong latLng = dss.getValue(LatLong.class);
+                final LatLng ltlg = new LatLng(latLng.getLatitude(), latLng.getLongitude());
+                AsyncTask.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            URL geocod = new URL("https://geocode.xyz/" + latLng.getLatitude() + "," + latLng.getLongitude() + "?json=1");
+                            HttpsURLConnection apiConnection = (HttpsURLConnection) geocod.openConnection();
+//                            apiConnection.setRequestProperty("json", "1");
+                            if (apiConnection.getResponseCode() == 200) {
+                                InputStream responseBody = apiConnection.getInputStream();
+                                InputStreamReader responseBodyReader = new InputStreamReader(responseBody, "UTF-8");
+                                JsonReader jsonReader = new JsonReader(responseBodyReader);
+//                                jsonReader.setLenient(true);
+                                jsonReader.beginObject();
+                                String locationInfo = jsonReader.toString();
+                                /*while (jsonReader.hasNext()) {
+                                    String key = jsonReader.nextName();
+
+                                    switch (key) {
+                                        case "city":
+
+                                            locationInfo += key + " : " + jsonReader.nextString() + ";\n";
+                                            break;
+                                        case "prov":
+                                            locationInfo += key + " : " + jsonReader.nextString() + ";\n";
+                                            break;
+                                        case "geocode":
+                                            locationInfo += key + " : " + jsonReader.nextString() + ";\n";
+                                            break;
+                                        case "timezone":
+                                            locationInfo += key + " : " + jsonReader.nextString() + ";\n";
+                                            break;
+                                        default:
+                                            jsonReader.skipValue();
+                                    }
+
+                                }*/
+                                final String resLocationInfo = new String(locationInfo);
+                                jsonReader.close();
+                                apiConnection.disconnect();
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (mMap != null) {
+                                            mMap.addMarker(new MarkerOptions().position(ltlg).title("Marker in " + ltlg.toString())).setSnippet(resLocationInfo);
+                                        }
+                                    }
+                                });
+
+                            } else {
+//                                Toast.makeText(getActivity().getApplicationContext(), "Something went wrong during api call", Toast.LENGTH_SHORT).show();
+                                System.out.println("Something went wrong during api call");
+                            }
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
             }
 
         }
